@@ -13,6 +13,36 @@ st.sidebar.subheader("Sélectionnez les écoles pour 30% :")
 selected_ecoles_30pct = st.sidebar.text_area("Entrez les noms des écoles, séparés par des virgules", "")
 if st.sidebar.button("Calculer la matrice"):
     # Calcul de la matrice
+ if not selected_ecoles_30pct : 
+    nb_sirets = df['SIRET ENTREP'].replace(r'^\s*$', np.nan, regex=True).notnull().sum()
+    keys = df['SIRET ENTREP'].iloc[1:1+nb_sirets].to_list()
+    values = list(map(int, df['MONTANT ETABLISSEMENT'].iloc[1:1+nb_sirets].to_list()))
+    sirets = dict(zip(keys, values))
+    sirets_30pct = {key:value*.3 for key, value in sirets.items()}
+    ecoles = df.iloc[0][5:-3].to_dict()
+    n_siret = len(sirets)
+    n_ecoles = len(ecoles)
+    grid = np.zeros((n_siret, n_ecoles))
+    sirets_names = list(sirets.keys())
+    ecoles_names = list(ecoles.keys())
+    i_ecole = 0
+    i_siret = 0
+    while i_ecole < n_ecoles and i_siret < n_siret:
+        montant = min(sirets[sirets_names[i_siret]], ecoles[ecoles_names[i_ecole]])
+        grid[i_siret][i_ecole] = montant
+        sirets[sirets_names[i_siret]] -= montant 
+        ecoles[ecoles_names[i_ecole]] -= montant
+        if sirets[sirets_names[i_siret]] == 0:
+            i_siret += 1
+        if ecoles[ecoles_names[i_ecole]] == 0:
+            i_ecole += 1
+    # Création du dataframe avec les résultats
+    new_df = pd.DataFrame(grid, columns=ecoles_names, index=sirets_names)
+    
+    # Affichage du dataframe sur Streamlit
+    st.write(new_df)
+
+ else : 
     nb_sirets = df['SIRET ENTREP'].replace(r'^\s*$', np.nan, regex=True).notnull().sum()
     keys = df['SIRET ENTREP'].iloc[1:1+nb_sirets].to_list()
     values = list(map(int, df['MONTANT ETABLISSEMENT'].iloc[1:1+nb_sirets].to_list()))
