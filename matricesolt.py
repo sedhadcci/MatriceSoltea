@@ -10,7 +10,8 @@ if uploaded_file is not None:
 # Interface utilisateur Streamlit
 st.title("Calcul de la matrice Saisie Soltea")
 st.sidebar.subheader("Sélectionnez les écoles pour 30% :")
-selected_ecoles_30pct = st.sidebar.text_area("Entrez les noms des écoles, séparés par des virgules", "")
+selected_ecoles_30pct_raw = st.sidebar.text_area("Entrez les noms des écoles, séparés par des virgules", "")
+selected_ecoles_30pct = selected_ecoles_30pct_raw.upper()
 if st.sidebar.button("Calculer la matrice"):
     # Calcul de la matrice
  if not selected_ecoles_30pct : 
@@ -22,6 +23,7 @@ if st.sidebar.button("Calculer la matrice"):
     ecoles = df.iloc[0][5:-3].to_dict()
     n_siret = len(sirets)
     n_ecoles = len(ecoles)
+    ecoles = {key.upper(): value for key, value in ecoles.items()}
     grid = np.zeros((n_siret, n_ecoles))
     sirets_names = list(sirets.keys())
     ecoles_names = list(ecoles.keys())
